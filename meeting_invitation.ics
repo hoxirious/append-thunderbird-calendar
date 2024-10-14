@@ -1,0 +1,25 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Invitation for R-0000092123 - Software Development Engineer in TestTue, 8 Oct 2024 17:40:31 +0000//EN
+CALSCALE:GREGORIAN
+BEGIN:VEVENT
+SUMMARY:Event 0: Invitation for R-0000092123 - Software Development Engineer in Test
+UID:d44982f7-453c-408c-ac43-5c51975e6dba
+SEQUENCE:0
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+DTSTART:20241022T180000Z
+DTEND:20241022T190000Z
+DESCRIPTION:Content-Type: multipart/alternative;	boundary="_000_0caba37cf2471e870e33sd074d8750abccom_"MIME-Version: 1.0X-CFilter-Loop: Reflected--_000_065caba37cf24711870e33af074d8750abccom_Content-Type: text/plain; charset="iso-8859-1"MIME-Version: 1.0Content-Transfer-Encoding: quoted-printableHi Hy,Thanks for your application for position of R-0000092123 - Software Develop=ment Engineer. We were impressed by your background and would like =to invite you to interview via WebEx to tell you a little more about the po=sition and get to know you better.There would be two rounds of interviews for this position and would like to= invite you for Round 1.Please let me know if below time slot work for you.=B7                  2024-10-22 2:00PM - 3:00PM EST and 2024-10-24 4:00-5:00PM EST.Pre-Requisite: We need Webcam to be enabled during the call.
+END:VEVENT
+BEGIN:VEVENT
+SUMMARY:Event 1: Invitation for R-0000092123 - Software Development Engineer in Test
+UID:66eb690e-e074-49b0-8729-002cde9a66b1
+SEQUENCE:0
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+DTSTART:20241024T080000Z
+DTEND:20241024T210000Z
+DESCRIPTION:Content-Type: multipart/alternative;	boundary="_000_0caba37cf2471e870e33sd074d8750abccom_"MIME-Version: 1.0X-CFilter-Loop: Reflected--_000_065caba37cf24711870e33af074d8750abccom_Content-Type: text/plain; charset="iso-8859-1"MIME-Version: 1.0Content-Transfer-Encoding: quoted-printableHi Hy,Thanks for your application for position of R-0000092123 - Software Develop=ment Engineer. We were impressed by your background and would like =to invite you to interview via WebEx to tell you a little more about the po=sition and get to know you better.There would be two rounds of interviews for this position and would like to= invite you for Round 1.Please let me know if below time slot work for you.=B7                  2024-10-22 2:00PM - 3:00PM EST and 2024-10-24 4:00-5:00PM EST.Pre-Requisite: We need Webcam to be enabled during the call.
+END:VEVENT
+END:VCALENDAR
