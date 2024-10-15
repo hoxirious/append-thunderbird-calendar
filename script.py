@@ -1,7 +1,7 @@
 import re
 import pytz
 import subprocess
-from datetime import date, datetime, timedelta
+from datetime import datetime, timedelta
 from typing import List
 import uuid
 
@@ -82,8 +82,6 @@ def open_in_thunderbird(ics_file_path):
     except subprocess.CalledProcessError as e:
         print(f"Error opening Thunderbird: {e}")
 
-
-
 # assuming every line contains 1 date
     # time extraction:
     # 12:00
@@ -91,8 +89,6 @@ def open_in_thunderbird(ics_file_path):
     # 1200
     # [start1,end1,start2, end2] | [start1,start2] + length
     # timezone is null -> use local timezone.
-
-
 
     # date extraction
     # this|next Thursday
@@ -198,8 +194,10 @@ def generate_schedule(time_matches, date_matches, timezone_match):
     else:
         for date in date_matches:
             if len(time_matches)%2 == 0:
+                # Even time = start time
                 for i in range(len(time_matches))[::2]:
                     sdates.append(convert_timezone(time_matches[i], date, timezone_match[0]))
+                # Odd time = end time
                 for i in range(len(time_matches))[1::2]:
                     edates.append(convert_timezone(time_matches[i], date, timezone_match[0]))
             else:
@@ -275,8 +273,6 @@ def extract_message(message: str):
     sections['Timezone'] = timezone_match[0]
 
     return (sections, body_content)
-
-
 
 def read_eml_file(file_path: str) -> str:
     with open(file_path, 'r', encoding='utf-8') as file:
