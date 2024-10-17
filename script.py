@@ -4,15 +4,10 @@ import subprocess
 from datetime import datetime, timedelta
 from typing import List
 import uuid
+import dateformat
 
 time_pattern = r'\b\d{1,2}:\d{2}\s*(?:AM|PM|am|pm)?\b|\b\d{2}:\d{2}\b'
 timezone_pattern = r'\b(EST|PST|CST|MST|GMT|UTC|[A-Z]{3})\b'
-ddmmyyyy_date_pattern = r'((0[1-9]|[12][0-9]|(30|31))(\/|-)(0[1-9]|1[0-2])(\/|-)((19|20)\d{2}))'
-yyyymmdd_date_pattern = r'(((19|20)\d{2})(\/|-)(0[1-9]|1[0-2])(\/|-)(0[1-9]|[12][0-9]|(30|31)))'
-
-month_pattern = r'(January|Jan|Febuary|Feb|March|Mar|April|Apr|May|June|Jun|July|Jul|August|Aug|September|Sep|October|Oct|November|Nov|December|Dec)'
-date_pattern = r'(3?1st|2?2nd|2?3rd|((1|2)?[0-9]|30)th)'
-day_pattern = r'([tT]his\s|[nN]ext\s)?(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)'
 
 day_enum = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 
@@ -95,13 +90,13 @@ def open_in_thunderbird(ics_file_path):
     # 27/08/2024 | 27-08-2024
 def extract_date(line:str) -> List[datetime]|None:
     extract_dates = []
-    yyyymmdd = re.findall(yyyymmdd_date_pattern, line)
+    yyyymmdd = re.findall(dateformat.yyyymmdd_date_pattern, line)
     # if yyyymmdd format does not exist
     if not yyyymmdd:
-        ddmmyyyy = re.findall(ddmmyyyy_date_pattern, line)
+        ddmmyyyy = re.findall(dateformat.ddmmyyyy_date_pattern, line)
         # if ddmmyyyy format does not exist
         if not ddmmyyyy:
-            day = re.findall(day_pattern,line)
+            day = re.findall(dateformat.day_pattern,line)
             reference_date = datetime.now()
             # if next|this Friday
             if day:
@@ -128,8 +123,8 @@ def extract_date(line:str) -> List[datetime]|None:
                 return [res_date]
             # if 4th July...
             else:
-                date = re.findall(date_pattern,line)
-                month = re.findall(month_pattern,line)
+                date = re.findall(dateformat.date_pattern,line)
+                month = re.findall(dateformat.month_pattern,line)
                 if date and month:
                     current_year = reference_date.year
                     date = date[0][0][:-2]
@@ -263,7 +258,7 @@ def extract_message(message: str):
 
     sdates, edates = generate_schedule(time_matches,date_matches, timezone_match)
 
-    print(sdates, edates)
+    print(body_content,sdates, edates)
     sections['Stime'] = []
     sections['Etime'] = []
     for i in range(len(sdates)):
