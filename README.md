@@ -6,7 +6,12 @@ I came across this series [PDF Parser in C](https://www.youtube.com/watch?v=ZYBR
 
 # Features
 This script covers:
-- Date formats: ddmmyyyy, yyyymmdd, Day Month Year.
+- Date formats: ddmmyyyy, yyyymmdd, mmddyyyy, Day Month Year, Year Month Day, Month Day Year.
 - Simple language: "This/Next" + Day. E.g. Next Friday.
 - Timezone conversion.
 - Multiple events creation.
+
+# Todo
+- Test cases for Date Formats
+- Thunderbird extension
+- Natural Language
