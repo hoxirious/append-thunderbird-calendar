@@ -4,15 +4,12 @@ import subprocess
 from datetime import datetime, timedelta
 from typing import List
 import uuid
+import dateformat
+from tzlocal import get_localzone
+import zoneinfo
 
 time_pattern = r'\b\d{1,2}:\d{2}\s*(?:AM|PM|am|pm)?\b|\b\d{2}:\d{2}\b'
-timezone_pattern = r'\b(EST|PST|CST|MST|GMT|UTC|[A-Z]{3})\b'
-ddmmyyyy_date_pattern = r'((0[1-9]|[12][0-9]|(30|31))(\/|-)(0[1-9]|1[0-2])(\/|-)((19|20)\d{2}))'
-yyyymmdd_date_pattern = r'(((19|20)\d{2})(\/|-)(0[1-9]|1[0-2])(\/|-)(0[1-9]|[12][0-9]|(30|31)))'
-
-month_pattern = r'(January|Jan|Febuary|Feb|March|Mar|April|Apr|May|June|Jun|July|Jul|August|Aug|September|Sep|October|Oct|November|Nov|December|Dec)'
-date_pattern = r'(3?1st|2?2nd|2?3rd|((1|2)?[0-9]|30)th)'
-day_pattern = r'([tT]his\s|[nN]ext\s)?(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)'
+timezone_pattern = r'\b(EST|PST|CST|MST|GMT|UTC)\b'
 
 day_enum = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 
@@ -38,10 +35,10 @@ timezone_offsets = {
         "MST": "America/Denver",
         "GMT": "Etc/GMT",
         "UTC": "UTC"
-    }
+}
 
 
-def create_ics(sections, body):
+def create_ics(sections, body, html):
     file_path = "./meeting_invitation.ics"
 
     content = f"""BEGIN:VCALENDAR
@@ -67,7 +64,7 @@ END:VEVENT
         content += event_block
 
     content += "END:VCALENDAR\n"
-    print(content)
+
     with open(file_path,'w', encoding='utf-8') as file:
         file.write(content)
 
@@ -82,6 +79,49 @@ def open_in_thunderbird(ics_file_path):
     except subprocess.CalledProcessError as e:
         print(f"Error opening Thunderbird: {e}")
 
+def extract_from_language(line:str) -> List[datetime]|None:
+    day = re.findall(dateformat.day_pattern,line)
+    reference_date = datetime.now()
+    # if next|this Friday
+    if day:
+        res_date: datetime = reference_date
+
+        pre_day = day[0][0]
+        extract_day = day[0][1]
+        today_day = reference_date.strftime("%A")
+        date_diff = 0
+        i = day_enum.index(today_day)
+        is_next = "next" in pre_day or "Next" in pre_day
+        did_jump = False
+        while day_enum[i] != extract_day:
+            if (i+1)%7 == 0:
+                did_jump = True
+            i = (i+1)%7
+            date_diff += 1
+
+        if is_next and not did_jump:
+            date_diff += 7
+
+        res_date = reference_date + timedelta(date_diff)
+
+        return [res_date]
+    # if 4th July...
+    else:
+        date = re.findall(dateformat.date_pattern,line)
+        month = re.findall(dateformat.month_pattern,line)
+        if date and month:
+            current_year = reference_date.year
+            date = date[0][0][:-2]
+            month = month_dict.get(month[0], month[0])
+            try:
+                res_date = datetime.strptime(f"{date} {month} {current_year}", "%d %B %Y")
+            except ValueError:
+                res_date = datetime.strptime(f"{date} {month} {current_year}", "%d %b %Y")
+
+            return [res_date]
+        else:
+            return None
+
 # assuming every line contains 1 date
     # time extraction:
     # 12:00
@@ -95,114 +135,137 @@ def open_in_thunderbird(ics_file_path):
     # 27/08/2024 | 27-08-2024
 def extract_date(line:str) -> List[datetime]|None:
     extract_dates = []
-    yyyymmdd = re.findall(yyyymmdd_date_pattern, line)
+    yyyymmdd = re.findall(dateformat.yyyymmdd_date_pattern, line)
     # if yyyymmdd format does not exist
     if not yyyymmdd:
-        ddmmyyyy = re.findall(ddmmyyyy_date_pattern, line)
+        ddmmyyyy = re.findall(dateformat.ddmmyyyy_date_pattern, line)
         # if ddmmyyyy format does not exist
         if not ddmmyyyy:
-            day = re.findall(day_pattern,line)
-            reference_date = datetime.now()
-            # if next|this Friday
-            if day:
-                res_date: datetime = reference_date
-
-                pre_day = day[0][0]
-                extract_day = day[0][1]
-                today_day = reference_date.strftime("%A")
-                date_diff = 0
-                i = day_enum.index(today_day)
-                is_next = "next" in pre_day or "Next" in pre_day
-                did_jump = False
-                while day_enum[i] != extract_day:
-                    if (i+1)%7 == 0:
-                        did_jump = True
-                    i = (i+1)%7
-                    date_diff += 1
-
-                if is_next and not did_jump:
-                    date_diff += 7
-
-                res_date = reference_date + timedelta(date_diff)
-
-                return [res_date]
-            # if 4th July...
-            else:
-                date = re.findall(date_pattern,line)
-                month = re.findall(month_pattern,line)
-                if date and month:
-                    current_year = reference_date.year
-                    date = date[0][0][:-2]
-                    month = month_dict.get(month[0], month[0])
-                    try:
-                        res_date = datetime.strptime(f"{date} {month} {current_year}", "%d %B %Y")
-                    except ValueError:
-                        res_date = datetime.strptime(f"{date} {month} {current_year}", "%d %b %Y")
-
-                    return [res_date]
+            mmddyyyy = re.findall(dateformat.mmddyyyy_date_pattern,line)
+            if not mmddyyyy:
+                monthdyr_date_pattern = re.findall(dateformat.monthdyr_date_pattern, line)
+                if not monthdyr_date_pattern:
+                    dmonthyr_date_pattern = re.findall(dateformat.dmonthyr_date_pattern, line)
+                    if not dmonthyr_date_pattern:
+                        yrmonthd_date_pattern = re.findall(dateformat.yrmonthd_date_pattern, line)
+                        if not yrmonthd_date_pattern:
+                            return extract_from_language(line)
+                        else:
+                            yrmonthd_formats = ['%Y, %B %d', '%Y, %B %w', '%Y, %b %d', '%Y, %b %w']
+                            for d in yrmonthd_date_pattern:
+                                for fmt in yrmonthd_formats:
+                                    try:
+                                        res_date = datetime.strptime(d[0], fmt)
+                                        extract_dates.append(res_date)
+                                    except ValueError:
+                                        continue
+                            return extract_dates
+                    else:
+                        dmonthyr_formats = ['%d %B, %Y', '%w %B, %Y', '%d %b, %Y', '%w %b, %Y']
+                        for d in dmonthyr_date_pattern:
+                            for fmt in dmonthyr_formats:
+                                try:
+                                    res_date = datetime.strptime(d[0], fmt)
+                                    extract_dates.append(res_date)
+                                except ValueError:
+                                    continue
+                        return extract_dates
                 else:
-                    return None
+                    monthdyr_formats = ['%B %d, %Y', '%B %w, %Y', '%b %d, %Y', '%b %w, %Y']
+                    for d in monthdyr_date_pattern:
+                        for fmt in monthdyr_formats:
+                            try:
+                                res_date = datetime.strptime(d[0], fmt)
+                                extract_dates.append(res_date)
+                            except ValueError:
+                                continue
+                    return extract_dates
+            else:
+                mmddyyyy_formats = ['%m/%d/%Y', '%m/%w/%Y', '%m-%d-%Y', '%m-%w-%Y']
+                for d in mmddyyyy:
+                    for fmt in mmddyyyy_formats:
+                        try:
+                            res_date = datetime.strptime(d[0], fmt)
+                            extract_dates.append(res_date)
+                        except ValueError:
+                            continue
+                return extract_dates
+
         else:
+            ddmmyyyy_formats = ['%d/%m/%Y', '%w/%m/%Y', '%d-%m-%Y', '%w-%m-%Y']
             for d in ddmmyyyy:
-                try:
-                    res_date = datetime.strptime(d[0], '%d/%m/%Y')
-                except ValueError:
-                    res_date = datetime.strptime(d[0], '%d-%m-%Y')
-
-                extract_dates.append(res_date)
-
+                for fmt in ddmmyyyy_formats:
+                    try:
+                        res_date = datetime.strptime(d[0], fmt)
+                        extract_dates.append(res_date)
+                    except ValueError:
+                        continue
             return extract_dates
 
     else:
+        yyyymmdd_formats = ['%Y/%m/%d', '%Y/%m/%w', '%Y-%m-%d', '%Y-%m-%w']
         for d in yyyymmdd:
-            try:
-                res_date = datetime.strptime(d[0], '%Y/%m/%d')
-            except ValueError:
-                res_date = datetime.strptime(d[0], '%Y-%m-%d')
-            extract_dates.append(res_date)
+            for fmt in yyyymmdd_formats:
+                try:
+                    res_date = datetime.strptime(d[0], fmt)
+                    extract_dates.append(res_date)
+                except ValueError:
+                    continue
         return extract_dates
 
 
-def convert_timezone(time, date, timezone):
-    try:
-    # Attempt to parse as 24-hour time format "HH:MM"
-        time_obj = datetime.strptime(time, "%H:%M").time()
-    except ValueError:
-        # If that fails, try 12-hour format with AM/PM "H:MMAM/PM"
-        time_obj = datetime.strptime(time, "%I:%M%p").time()
+def convert_timezone(time, date: datetime, timezone: zoneinfo.ZoneInfo):
+    time_format = ['%H:%M','%H:%M%p','%H:%M %p','I:%M%p', 'I:%M %p']
+    for fmt in time_format:
+        try:
+        # Attempt to parse as 24-hour time format "HH:MM"
+            time_obj = datetime.strptime(time,fmt).time()
+            new_date = date
+            new_date = new_date.replace(hour=time_obj.hour, minute=time_obj.minute, second=0, microsecond=0)
 
-    new_date = date
-    new_date = new_date.replace(hour=time_obj.hour, minute=time_obj.minute, second=0, microsecond=0)
+            _timezone = pytz.timezone(timezone.key)
+            new_date = _timezone.localize(new_date).astimezone(pytz.utc)
+            return new_date
+        except ValueError:
+            continue
 
-    timezone = pytz.timezone(timezone_offsets[timezone])
-    new_date = timezone.localize(new_date).astimezone(pytz.utc)
-    return new_date
+    return None
 
 # Convert to UTC-0
 def generate_schedule(time_matches, date_matches, timezone_match):
     sdates = []
     edates = []
-    # Each date has each pair time
-    print(time_matches, date_matches, timezone_match)
+    # Default length is 60 minutes
+    meeting_length = 1
+    # Each date has two time sets - start and end time.
+    # Even index of time_matches represents for start time
+    # Odd index of time_matches represents for end time
     if len(date_matches) == len(time_matches)/2:
         for i,date in enumerate(date_matches):
-            if len(time_matches)%2 == 0:
-                sdates.append(convert_timezone(time_matches[i*2], date, timezone_match[0]))
-                edates.append(convert_timezone(time_matches[i*2+1], date, timezone_match[0]))
-            else:
-                print("todo")
+            sdates.append(convert_timezone(time_matches[i*2], date, timezone_match))
+            edates.append(convert_timezone(time_matches[i*2+1], date, timezone_match))
     else:
         for date in date_matches:
+            # for each date, add all even indexes time_matches to start time
+            # and add odd indexes of time_matches to end time
             if len(time_matches)%2 == 0:
                 # Even time = start time
                 for i in range(len(time_matches))[::2]:
-                    sdates.append(convert_timezone(time_matches[i], date, timezone_match[0]))
+                    sdates.append(convert_timezone(time_matches[i], date, timezone_match))
                 # Odd time = end time
                 for i in range(len(time_matches))[1::2]:
-                    edates.append(convert_timezone(time_matches[i], date, timezone_match[0]))
-            else:
-                print("todo")
+                    edates.append(convert_timezone(time_matches[i], date, timezone_match))
 
+            # for each date, add every index of time_matches as start time and increment 60 minutes as end time
+            else:
+                for i in range(len(time_matches)):
+                    sdate = convert_timezone(time_matches[i], date, timezone_match)
+                    sdates.append(sdate)
+                    if sdate:
+                        edate = sdate.replace(hour=sdate.hour+meeting_length, minute=sdate.minute, second=0, microsecond=0)
+                    else:
+                        edate = sdate
+                    edates.append(edate)
 
     return (sdates, edates)
 
@@ -211,9 +274,17 @@ def extract_message(message: str):
     sections = {}
     current_section = None
     meta_eindex = 0
+    boundary_match = None
+    boundary = ""
 
     for line in lines:
-        if line.startswith("Content-Type:"):
+        if re.search(r'boundary="([^"]+)"', line):
+            boundary_match = re.search(r'boundary="([^"]+)"', lines[meta_eindex])
+            meta_eindex += 1
+            continue
+
+        if boundary_match and boundary_match.group(1) in line :
+            boundary = boundary_match.group(1)
             break
 
         if re.match(r'^[A-Za-z\-]+:', line):
@@ -227,9 +298,8 @@ def extract_message(message: str):
     for key in sections:
         sections[key] = sections[key].strip()
 
-    boundary_match = re.search(r'boundary="([^"]+)"', lines[meta_eindex])
-    boundary = boundary_match.group(1) if boundary_match else ""
     body_content = ""
+    html_content = ""
     end_body = 0
 
 
@@ -242,37 +312,37 @@ def extract_message(message: str):
         if f"--{boundary}" in line:
             end_body += 1
 
-        if end_body == 2:
+        if end_body == 3:
             break
 
-        body_content += line
+        if end_body == 1:
+            body_content += line
+            # Date Extract
+            date = extract_date(line)
+            if date:
+                date_matches.extend(date)
 
-        # Date Extract
-        date = extract_date(line)
-        if date:
-            date_matches.extend(date)
+            # Time Extract
+            time = re.findall(time_pattern, line)
+            if time:
+                time_matches.extend(time)
 
-        # Time Extract
-        time = re.findall(time_pattern, line)
-        if time:
-            time_matches.extend(time)
+            timezone = re.findall(timezone_pattern, line)
+            if timezone:
+                timezone_match.extend(timezone)
+        if end_body == 2:
+            html_content += line
 
-        timezone = re.findall(timezone_pattern, line)
-        if timezone:
-            timezone_match.extend(timezone)
-
-    sdates, edates = generate_schedule(time_matches,date_matches, timezone_match)
-
-    print(sdates, edates)
+    sdates, edates = generate_schedule(time_matches,date_matches, timezone_match[0] if len(timezone_match) > 0 else get_localzone())
     sections['Stime'] = []
     sections['Etime'] = []
     for i in range(len(sdates)):
         sections['Stime'].append(sdates[i].strftime("%Y%m%dT%H%M%SZ"))
         sections['Etime'].append(edates[i].strftime("%Y%m%dT%H%M%SZ"))
 
-    sections['Timezone'] = timezone_match[0]
+    sections['Timezone'] = timezone_match[0] if len(timezone_match) > 0 else get_localzone()
 
-    return (sections, body_content)
+    return (sections, body_content, html_content)
 
 def read_eml_file(file_path: str) -> str:
     with open(file_path, 'r', encoding='utf-8') as file:
@@ -283,5 +353,5 @@ def read_eml_file(file_path: str) -> str:
 file_path = "./message.eml"
 email_text = read_eml_file(file_path)
 message = extract_message(email_text)
-create_ics(message[0], message[1])
+create_ics(message[0], message[1], message[2])
 open_in_thunderbird("./meeting_invitation.ics")

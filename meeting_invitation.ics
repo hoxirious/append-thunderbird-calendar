@@ -1,25 +1,15 @@
 BEGIN:VCALENDAR
 VERSION:2.0
-PRODID:-//Invitation for R-0000092123 - Software Development Engineer in TestTue, 8 Oct 2024 17:40:31 +0000//EN
+PRODID:-//Interview Hy Huynh This is a multi-part message in MIME format.Thu, 17 Oct 2024 10:54:25 -0600//EN
 CALSCALE:GREGORIAN
 BEGIN:VEVENT
-SUMMARY:Event 0: Invitation for R-0000092123 - Software Development Engineer in Test
-UID:d44982f7-453c-408c-ac43-5c51975e6dba
+SUMMARY:Event 0: Interview Hy Huynh This is a multi-part message in MIME format.
+UID:ecb8dcd7-af1c-4bd8-b2cb-faa2b5f4c0f9
 SEQUENCE:0
 STATUS:CONFIRMED
 TRANSP:OPAQUE
-DTSTART:20241022T180000Z
-DTEND:20241022T190000Z
-DESCRIPTION:Content-Type: multipart/alternative;	boundary="_000_0caba37cf2471e870e33sd074d8750abccom_"MIME-Version: 1.0X-CFilter-Loop: Reflected--_000_065caba37cf24711870e33af074d8750abccom_Content-Type: text/plain; charset="iso-8859-1"MIME-Version: 1.0Content-Transfer-Encoding: quoted-printableHi Hy,Thanks for your application for position of R-0000092123 - Software Develop=ment Engineer. We were impressed by your background and would like =to invite you to interview via WebEx to tell you a little more about the po=sition and get to know you better.There would be two rounds of interviews for this position and would like to= invite you for Round 1.Please let me know if below time slot work for you.=B7                  2024-10-22 2:00PM - 3:00PM EST and 2024-10-24 4:00-5:00PM EST.Pre-Requisite: We need Webcam to be enabled during the call.
-END:VEVENT
-BEGIN:VEVENT
-SUMMARY:Event 1: Invitation for R-0000092123 - Software Development Engineer in Test
-UID:66eb690e-e074-49b0-8729-002cde9a66b1
-SEQUENCE:0
-STATUS:CONFIRMED
-TRANSP:OPAQUE
-DTSTART:20241024T080000Z
-DTEND:20241024T210000Z
-DESCRIPTION:Content-Type: multipart/alternative;	boundary="_000_0caba37cf2471e870e33sd074d8750abccom_"MIME-Version: 1.0X-CFilter-Loop: Reflected--_000_065caba37cf24711870e33af074d8750abccom_Content-Type: text/plain; charset="iso-8859-1"MIME-Version: 1.0Content-Transfer-Encoding: quoted-printableHi Hy,Thanks for your application for position of R-0000092123 - Software Develop=ment Engineer. We were impressed by your background and would like =to invite you to interview via WebEx to tell you a little more about the po=sition and get to know you better.There would be two rounds of interviews for this position and would like to= invite you for Round 1.Please let me know if below time slot work for you.=B7                  2024-10-22 2:00PM - 3:00PM EST and 2024-10-24 4:00-5:00PM EST.Pre-Requisite: We need Webcam to be enabled during the call.
+DTSTART:20241024T170000Z
+DTEND:20241024T180000Z
+DESCRIPTION:--------------t22uV9McDODXrpCUn8laOlqnContent-Type: text/plain; charset=UTF-8; format=flowedContent-Transfer-Encoding: 8bitHy Huynh is inviting you to a scheduled Zoom meeting.Topic: Hy Huynh's Zoom MeetingTime: Oct 24, 2024 11:00 AM EdmontonJoin Zoom Meetinghttps://ucalgary.zoom.us/j/93234471519?pwd=3vvudSAV9XOnjRVtW1wTcsp5EsdTma.1Meeting ID: 932 3447 1519Passcode: 122245---One tap mobile+12042727920,,93234471519#,,,,*122245# Canada+14388097799,,93234471519#,,,,*122245# Canada---Dial by your location• +1 204 272 7920 Canada• +1 438 809 7799 Canada• +1 587 328 1099 Canada• +1 647 374 4685 Canada• +1 647 558 0588 Canada• +1 778 907 2071 Canada• +1 780 666 0144 Canada• +1 360 209 5623 US• +1 386 347 5053 US• +1 507 473 4847 US• +1 564 217 2000 US• +1 646 558 8656 US (New York)• +1 646 931 3860 US• +1 669 444 9171 US• +1 669 900 6833 US (San Jose)• +1 689 278 1000 US• +1 719 359 4580 US• +1 253 205 0468 US• +1 253 215 8782 US (Tacoma)• +1 301 715 8592 US (Washington DC)• +1 305 224 1968 US• +1 309 205 3325 US• +1 312 626 6799 US (Chicago)• +1 346 248 7799 US (Houston)Meeting ID: 932 3447 1519Passcode: 122245Find your local number: https://ucalgary.zoom.us/u/aeiugEQwp---Join by SIP• 93234471519@zoomcrc.com---Join by H.323• 162.255.37.11 (US West)• 162.255.36.11 (US East)• 159.124.168.213 (Canada Toronto)• 65.39.152.160 (Canada Vancouver)Meeting ID: 932 3447 1519Passcode: 122245
 END:VEVENT
 END:VCALENDAR
