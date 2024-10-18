@@ -134,85 +134,48 @@ def extract_from_language(line:str) -> List[datetime]|None:
     # this|next Thursday
     # 27/08/2024 | 27-08-2024
 def extract_date(line:str) -> List[datetime]|None:
-    extract_dates = []
     yyyymmdd = re.findall(dateformat.yyyymmdd_date_pattern, line)
-    # if yyyymmdd format does not exist
     if not yyyymmdd:
         ddmmyyyy = re.findall(dateformat.ddmmyyyy_date_pattern, line)
-        # if ddmmyyyy format does not exist
         if not ddmmyyyy:
             mmddyyyy = re.findall(dateformat.mmddyyyy_date_pattern,line)
             if not mmddyyyy:
-                monthdyr_date_pattern = re.findall(dateformat.monthdyr_date_pattern, line)
-                if not monthdyr_date_pattern:
-                    dmonthyr_date_pattern = re.findall(dateformat.dmonthyr_date_pattern, line)
-                    if not dmonthyr_date_pattern:
-                        yrmonthd_date_pattern = re.findall(dateformat.yrmonthd_date_pattern, line)
-                        if not yrmonthd_date_pattern:
+                monthdyr = re.findall(dateformat.monthdyr_date_pattern, line)
+                if not monthdyr:
+                    dmonthyr = re.findall(dateformat.dmonthyr_date_pattern, line)
+                    if not dmonthyr:
+                        yrmonthd = re.findall(dateformat.yrmonthd_date_pattern, line)
+                        if not yrmonthd:
                             return extract_from_language(line)
                         else:
                             yrmonthd_formats = ['%Y, %B %d', '%Y, %B %w', '%Y, %b %d', '%Y, %b %w']
-                            for d in yrmonthd_date_pattern:
-                                for fmt in yrmonthd_formats:
-                                    try:
-                                        res_date = datetime.strptime(d[0], fmt)
-                                        extract_dates.append(res_date)
-                                    except ValueError:
-                                        continue
-                            return extract_dates
+                            return format_dates(yrmonthd, yrmonthd_formats)
                     else:
                         dmonthyr_formats = ['%d %B, %Y', '%w %B, %Y', '%d %b, %Y', '%w %b, %Y']
-                        for d in dmonthyr_date_pattern:
-                            for fmt in dmonthyr_formats:
-                                try:
-                                    res_date = datetime.strptime(d[0], fmt)
-                                    extract_dates.append(res_date)
-                                except ValueError:
-                                    continue
-                        return extract_dates
+                        return format_dates(dmonthyr, dmonthyr_formats)
                 else:
                     monthdyr_formats = ['%B %d, %Y', '%B %w, %Y', '%b %d, %Y', '%b %w, %Y']
-                    for d in monthdyr_date_pattern:
-                        for fmt in monthdyr_formats:
-                            try:
-                                res_date = datetime.strptime(d[0], fmt)
-                                extract_dates.append(res_date)
-                            except ValueError:
-                                continue
-                    return extract_dates
+                    return format_dates(monthdyr, monthdyr_formats)
             else:
                 mmddyyyy_formats = ['%m/%d/%Y', '%m/%w/%Y', '%m-%d-%Y', '%m-%w-%Y']
-                for d in mmddyyyy:
-                    for fmt in mmddyyyy_formats:
-                        try:
-                            res_date = datetime.strptime(d[0], fmt)
-                            extract_dates.append(res_date)
-                        except ValueError:
-                            continue
-                return extract_dates
-
+                return format_dates(mmddyyyy, mmddyyyy_formats)
         else:
             ddmmyyyy_formats = ['%d/%m/%Y', '%w/%m/%Y', '%d-%m-%Y', '%w-%m-%Y']
-            for d in ddmmyyyy:
-                for fmt in ddmmyyyy_formats:
-                    try:
-                        res_date = datetime.strptime(d[0], fmt)
-                        extract_dates.append(res_date)
-                    except ValueError:
-                        continue
-            return extract_dates
-
+            return format_dates(ddmmyyyy, ddmmyyyy_formats)
     else:
         yyyymmdd_formats = ['%Y/%m/%d', '%Y/%m/%w', '%Y-%m-%d', '%Y-%m-%w']
-        for d in yyyymmdd:
-            for fmt in yyyymmdd_formats:
-                try:
-                    res_date = datetime.strptime(d[0], fmt)
-                    extract_dates.append(res_date)
-                except ValueError:
-                    continue
-        return extract_dates
+        return format_dates(yyyymmdd, yyyymmdd_formats)
 
+def format_dates(dates, formats):
+    extract_dates = []
+    for d in dates:
+        for fmt in formats:
+            try:
+                res_date = datetime.strptime(d[0], fmt)
+                extract_dates.append(res_date)
+            except ValueError:
+                continue
+    return extract_dates
 
 def convert_timezone(time, date: datetime, timezone: zoneinfo.ZoneInfo):
     time_format = ['%H:%M','%H:%M%p','%H:%M %p','I:%M%p', 'I:%M %p']
