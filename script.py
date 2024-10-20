@@ -2,7 +2,7 @@ import re
 import pytz
 import subprocess
 from datetime import datetime, timedelta
-from typing import List
+from typing import List, Optional
 import uuid
 import dateformat
 from tzlocal import get_localzone
@@ -133,49 +133,37 @@ def extract_from_language(line:str) -> List[datetime]|None:
     # date extraction
     # this|next Thursday
     # 27/08/2024 | 27-08-2024
-def extract_date(line:str) -> List[datetime]|None:
-    yyyymmdd = re.findall(dateformat.yyyymmdd_date_pattern, line)
-    if not yyyymmdd:
-        ddmmyyyy = re.findall(dateformat.ddmmyyyy_date_pattern, line)
-        if not ddmmyyyy:
-            mmddyyyy = re.findall(dateformat.mmddyyyy_date_pattern,line)
-            if not mmddyyyy:
-                monthdyr = re.findall(dateformat.monthdyr_date_pattern, line)
-                if not monthdyr:
-                    dmonthyr = re.findall(dateformat.dmonthyr_date_pattern, line)
-                    if not dmonthyr:
-                        yrmonthd = re.findall(dateformat.yrmonthd_date_pattern, line)
-                        if not yrmonthd:
-                            return extract_from_language(line)
-                        else:
-                            yrmonthd_formats = ['%Y, %B %d', '%Y, %B %w', '%Y, %b %d', '%Y, %b %w']
-                            return format_dates(yrmonthd, yrmonthd_formats)
-                    else:
-                        dmonthyr_formats = ['%d %B, %Y', '%w %B, %Y', '%d %b, %Y', '%w %b, %Y']
-                        return format_dates(dmonthyr, dmonthyr_formats)
-                else:
-                    monthdyr_formats = ['%B %d, %Y', '%B %w, %Y', '%b %d, %Y', '%b %w, %Y']
-                    return format_dates(monthdyr, monthdyr_formats)
-            else:
-                mmddyyyy_formats = ['%m/%d/%Y', '%m/%w/%Y', '%m-%d-%Y', '%m-%w-%Y']
-                return format_dates(mmddyyyy, mmddyyyy_formats)
-        else:
-            ddmmyyyy_formats = ['%d/%m/%Y', '%w/%m/%Y', '%d-%m-%Y', '%w-%m-%Y']
-            return format_dates(ddmmyyyy, ddmmyyyy_formats)
-    else:
-        yyyymmdd_formats = ['%Y/%m/%d', '%Y/%m/%w', '%Y-%m-%d', '%Y-%m-%w']
-        return format_dates(yyyymmdd, yyyymmdd_formats)
+def extract_date(line: str) -> Optional[List[datetime]]:
+    # Define patterns and corresponding formats in a tuple
+    patterns_formats = [
+        (dateformat.yyyymmdd_date_pattern, ['%Y/%m/%d', '%Y/%m/%w', '%Y-%m-%d', '%Y-%m-%w']),
+        (dateformat.ddmmyyyy_date_pattern, ['%d/%m/%Y', '%w/%m/%Y', '%d-%m-%Y', '%w-%m-%Y']),
+        (dateformat.mmddyyyy_date_pattern, ['%m/%d/%Y', '%m/%w/%Y', '%m-%d-%Y', '%m-%w-%Y']),
+        (dateformat.monthdyr_date_pattern, ['%B %d, %Y', '%B %w, %Y', '%b %d, %Y', '%b %w, %Y']),
+        (dateformat.dmonthyr_date_pattern, ['%d %B, %Y', '%w %B, %Y', '%d %b, %Y', '%w %b, %Y']),
+        (dateformat.yrmonthd_date_pattern, ['%Y, %B %d', '%Y, %B %w', '%Y, %b %d', '%Y, %b %w']),
+    ]
+
+    # Loop through patterns and try to find matches
+    for pattern, formats in patterns_formats:
+        matches = re.findall(pattern, line)
+        if matches:
+            return format_dates(matches, formats)
+
+    # Fallback if no match was found
+    return extract_from_language(line)
 
 def format_dates(dates, formats):
-    extract_dates = []
+    extracted_dates = []
     for d in dates:
         for fmt in formats:
             try:
+                # d[0] contains the matched date string
                 res_date = datetime.strptime(d[0], fmt)
-                extract_dates.append(res_date)
+                extracted_dates.append(res_date)
             except ValueError:
                 continue
-    return extract_dates
+    return extracted_dates
 
 def convert_timezone(time, date: datetime, timezone: zoneinfo.ZoneInfo):
     time_format = ['%H:%M','%H:%M%p','%H:%M %p','I:%M%p', 'I:%M %p']
